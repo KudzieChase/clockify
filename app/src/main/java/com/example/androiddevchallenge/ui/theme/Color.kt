@@ -21,3 +21,11 @@ val purple200 = Color(0xFFBB86FC)
 val purple500 = Color(0xFF6200EE)
 val purple700 = Color(0xFF3700B3)
 val teal200 = Color(0xFF03DAC5)
+
+val surface = Color(0xEFD8AF)
+val background = Color(0xFBF0DC)
+
+val pink200 = Color(0xffff7597)
+val pink500 = Color(0xffff0266)
+val pink600 = Color(0xffd8004d)
+val pinkDarkPrimary = Color(0xff24191c)

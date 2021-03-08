@@ -17,4 +17,10 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="primary">#ECC786</color>
+    <color name="primaryVariant">#F8D18D</color>
+    <color name="surface">#EFD8AF</color>
+    <color name="activity_bg">#FBF0DC</color>
+    <color name="immersive_ui">#33000000</color>
 </resources>
