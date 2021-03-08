@@ -1,5 +1,21 @@
+/*
+ * Copyright 2021 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.example.androiddevchallenge.screens
 
+import android.util.Log
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,21 +43,75 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androiddevchallenge.utils.makeReadableDuration
 import com.example.androiddevchallenge.utils.times
-
+import com.example.androiddevchallenge.viewmodels.ClockViewModel
 
 @Composable
-fun ClockScreen() {
+fun ClockScreen(clockViewModel: ClockViewModel = viewModel()) {
+    val isPlaying by clockViewModel.isPlaying.observeAsState(false)
+    val startTime by clockViewModel.startTime.observeAsState(0L)
+    val currentTime by clockViewModel.currentTime.observeAsState(0L)
 
+    var progress by remember { mutableStateOf(1f) }
+
+    progress = if (startTime > 0) {
+        currentTime.toFloat() / startTime.toFloat()
+    } else {
+        1f
+    }
+
+    Log.e("Progress", progress.toString())
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Header()
+        Clock(progress = progress) {
+            TimeText(time = makeReadableDuration(currentTime))
+        }
+        TimerSelectionList { selectedTime ->
+            clockViewModel.setTime(selectedTime)
+        }
+        PlayPauseButton(
+            isPlaying = isPlaying,
+            onPlayPauseClick = {
+                clockViewModel.setIsPlaying(!isPlaying)
+                if (isPlaying) {
+                    clockViewModel.startTimer()
+                } else {
+                    clockViewModel.pauseTimer(currentTime)
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun TimeText(time: String) {
+    Text(
+        text = time,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        style = MaterialTheme.typography.h3,
+        textAlign = TextAlign.Center,
+        fontFamily = FontFamily.Monospace
+    )
 }
 
 @Composable
@@ -77,20 +147,24 @@ fun Header() {
 }
 
 @Composable
-fun Clock(content: @Composable() () -> Unit) {
+fun Clock(
+    progress: Float,
+    content: @Composable() () -> Unit
+) {
     Box(
         modifier = Modifier
-            .size(200.dp)
+            .size(300.dp)
+            .padding(8.dp)
             .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
             modifier = Modifier
                 .fillMaxSize(),
-            progress = 1f
+            progress = progress
         )
         Box(
-            modifier = Modifier.size(100.dp),
+            modifier = Modifier.size(200.dp),
             contentAlignment = Alignment.Center
         ) {
             content()
@@ -98,25 +172,27 @@ fun Clock(content: @Composable() () -> Unit) {
     }
 }
 
-
 @Composable
-fun TimerSelectionList() {
+fun TimerSelectionList(onItemClick: (Long) -> Unit) {
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp)
     ) {
         items(times) { time ->
-            TimerItem(millis = time)
+            TimerItem(millis = time, onItemClick)
         }
     }
 }
 
 @Composable
-fun TimerItem(millis: Long) {
+fun TimerItem(millis: Long, onItemClick: (Long) -> Unit) {
     Surface(
         modifier = Modifier
-            .height(40.dp),
+            .height(40.dp)
+            .clickable {
+                onItemClick(millis)
+            },
         color = Color.Gray,
         elevation = 2.dp,
         shape = RoundedCornerShape(8.dp)
@@ -137,7 +213,6 @@ fun TimerItem(millis: Long) {
             )
         }
     }
-
 }
 
 @Composable
@@ -165,7 +240,7 @@ fun PlayPauseButton(isPlaying: Boolean, onPlayPauseClick: () -> Unit) {
             ) {
                 Crossfade(targetState = isPlaying) { isPlayingState ->
                     Icon(
-                        imageVector = if (isPlayingState) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                        imageVector = if (isPlayingState) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                         contentDescription = null,
                         tint = Color.DarkGray,
                         modifier = Modifier.fillMaxSize(.8f)
@@ -180,8 +255,8 @@ fun PlayPauseButton(isPlaying: Boolean, onPlayPauseClick: () -> Unit) {
 @Composable
 fun ClockPreview() {
     Surface(color = MaterialTheme.colors.background) {
-        Clock {
-            Text("00:00")
+        Clock(1f) {
+            TimeText("00:00")
         }
     }
 }
@@ -190,7 +265,7 @@ fun ClockPreview() {
 @Composable
 fun TimerItemPreview() {
     Surface(color = MaterialTheme.colors.background) {
-        TimerItem(millis = 6000L)
+        TimerItem(millis = 6000L, { })
     }
 }
 
@@ -216,6 +291,6 @@ fun HeaderPreview() {
 @Composable
 fun TimerSelectionListPreview() {
     Surface(color = MaterialTheme.colors.background) {
-        TimerSelectionList()
+        TimerSelectionList {}
     }
 }
