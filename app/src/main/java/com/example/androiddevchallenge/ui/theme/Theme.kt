@@ -33,7 +33,8 @@ private val LightColorPalette = lightColors(
     primary = pink200,
     secondary = pink200,
     surface = pinkDarkPrimary,
-    onSecondary = Color.Black
+    onSecondary = Color.Black,
+    background = background
 
     /* Other default colors to override
 background = Color.White,

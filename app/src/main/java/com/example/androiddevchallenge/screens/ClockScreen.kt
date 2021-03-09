@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -96,6 +97,7 @@ fun ClockScreen(clockViewModel: ClockViewModel = viewModel()) {
                 }
             }
         )
+        Spacer(Modifier.height(12.dp))
     }
 }
 
@@ -127,14 +129,16 @@ fun Header() {
                 style = MaterialTheme.typography.h3
             )
         }
+        Spacer(Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = "Your favorite hardcoded countdown timer ;)",
-                maxLines = 1,
+                maxLines = 2,
                 style = MaterialTheme.typography.h6,
                 textAlign = TextAlign.Center
             )
         }
+        Spacer(Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(
                 modifier = Modifier.fillMaxWidth(),
